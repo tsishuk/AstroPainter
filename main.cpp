@@ -9,6 +9,7 @@ class Container : public QWidget
 {
     //Q_OBJECT
 public:
+    //![1]
     Container(QWidget* parent = NULL)
         :QWidget(parent)
     {
@@ -20,12 +21,24 @@ public:
         hlayout->addWidget(btn_right);
         hlayout->addWidget(wgt);
 
-        //connect(btn_left, SIGNAL(clicked(bool)), wgt, SLOT(renderLeft()));
-        //connect(btn_right, SIGNAL(clicked(bool)), wgt, SLOT(renderRight()));
+        QObject::connect(btn_left, SIGNAL(clicked(bool)), wgt, SLOT(renderLeft()));
+        QObject::connect(btn_right, SIGNAL(clicked(bool)), wgt, SLOT(renderRight()));
 
         setLayout(hlayout);
     }
+    //![1]
+
+
+    //![2]
+public slots:
+    void EmptySlot()
+    {
+        qDebug()<<"I ama slot";
+    }
+    //![2]
+
 };
+
 
 
 int main(int argc, char* argv[])

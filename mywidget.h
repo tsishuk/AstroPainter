@@ -13,14 +13,14 @@ public:
 
 public slots:
     void renderPoint();
-    //void renderLeft();
-   // void renderRight();
+    void renderLeft();
+    void renderRight();
 
 protected:
     void paintEvent(QPaintEvent* pe) Q_DECL_OVERRIDE;
 
 private:
-    int dummy;
+    int current_color;
 };
 
 
