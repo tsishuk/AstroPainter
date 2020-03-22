@@ -7,8 +7,7 @@
 MyWidget::MyWidget(QWidget *parent):
     QWidget(parent),current_color(0)
 {
-    setFixedSize(520,520);
-    //setAttribute(Qt::WA_PaintOnScreen);
+    setFixedSize(670,550);
 }
 //! [1]
 
@@ -16,21 +15,60 @@ MyWidget::MyWidget(QWidget *parent):
 //! [2]
 void MyWidget::paintEvent(QPaintEvent *pe)
 {
+    static const QPoint marker[3] = {
+        QPoint(7, 7),
+        QPoint(-7, 7),
+        QPoint(0, 0)
+    };
+
     QPainter painter(this);
     QBrush cur_brush;
     if (current_color == 0)
-        cur_brush = QBrush(Qt::red);
+        cur_brush = QBrush(Qt::black);
     else if (current_color == 1)
         cur_brush = QBrush(Qt::green);
     else if (current_color == 2)
         cur_brush = QBrush(Qt::cyan);
-    painter.fillRect(0, 0, width(), height(), Qt::white);
-    //painter.fillRect(pe->rect(),Qt::cyan);
-    painter.fillRect(pe->rect(),cur_brush);
-    qDebug()<<"PaintEvent: Width = "<< width() <<" Height = "<< height() << "Foot.x = "<<pe->rect().bottomLeft().x()<<"Foot.y = "<<pe->rect().bottomLeft().y()
-           <<"Top.x = "<<pe->rect().topRight().x()<<"Top.y = "<<pe->rect().topRight().y();
+
+    if (pe->rect().width() < this->width()-100)
+        painter.fillRect(pe->rect(),cur_brush);
+    else {
+        QPainter painter(this);
+        QBrush temp_brush = QBrush(Qt::yellow);
+        painter.fillRect(pe->rect(),Qt::black);
+        painter.fillRect(300,100,50,30,temp_brush);
+        painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
+        painter.setBrush(Qt::green);
+        for(int i=20; i<=650; i+=40){
+            painter.drawLine(QPoint(i,0), QPoint(i,512));
+        }
+
+        painter.save();
+        painter.translate(20,400);
+        painter.drawConvexPolygon(marker, 3);
+        painter.translate(10,10);
+        painter.drawConvexPolygon(marker, 3);
+        painter.translate(10,1);
+        painter.drawConvexPolygon(marker, 3);
+        painter.translate(10,1);
+        painter.drawConvexPolygon(marker, 3);
+        painter.translate(10,1);
+        painter.drawConvexPolygon(marker, 3);
+        painter.translate(10,1);
+        painter.drawConvexPolygon(marker, 3);
+        painter.restore();
+        int scale_counter = 0;
+        for (int i=10; i<650; i+=40){
+            if (scale_counter >= 127)
+                scale_counter = 0;
+            painter.drawText(i, 525, "0x"+QString::number(scale_counter, 16));
+            scale_counter += 16;
+        }
+        //painter->drawText(QRectF(0, 0, width(), height()), Qt::AlignCenter, QStringLiteral("QWindow"));
+    }
 }
 //! [2]
+
 
 
 void MyWidget::renderPoint()
@@ -45,11 +83,8 @@ void MyWidget::renderLeft()
     int height = this->height();
     QRect upd_rect = QRect(0, 0, width/2, height/2);
     current_color = 1;
-    //update(0, 0, width/2, height/2);
+
     this->update(upd_rect);
-    //this->update();
-    qDebug()<<"renderLeft: Width = "<< this->width() <<" Height = "<< this->height() << "Foot.x = "<<upd_rect.bottomLeft().x()<<"Foot.y = "<<upd_rect.bottomLeft().y()
-           <<"Top.x = "<<upd_rect.topRight().x()<<"Top.y = "<<upd_rect.topRight().y();
 }
 
 
@@ -57,13 +92,10 @@ void MyWidget::renderRight()
 {
     int width = this->width();
     int height = this->height();
-    QRect upd_rect = QRect(width/2, height/2, width, height);
+    QRect upd_rect = QRect(width/2, height/2, width/2, height/2);
     current_color = 2;
-    qDebug()<<"width = "<<width;
-    qDebug()<<"renderRight: Width = "<< this->width() <<" Height = "<< this->height() << "Foot.x = "<<upd_rect.bottomLeft().x()<<"Foot.y = "<<upd_rect.bottomLeft().y()
-           <<"Top.x = "<<upd_rect.topRight().x()<<"Top.y = "<<upd_rect.topRight().y();
+
     this->update(upd_rect);
-    //this->update();
 }
 
 
