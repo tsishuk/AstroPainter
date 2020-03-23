@@ -5,10 +5,11 @@
 
 //! [1]
 MyWidget::MyWidget(QWidget *parent):
-    QWidget(parent), current_color(0),
-    current_faza(0), offset(0), marker_counter(0)
+    QWidget(parent),
+    current_fv(0), marker_counter(0)
 {
     setFixedSize(670,550);
+    this->setUpdatesEnabled(true);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMarker()));
     timer->start(2000);
@@ -20,11 +21,30 @@ MyWidget::MyWidget(QWidget *parent):
 void MyWidget::updateMarker()
 {
     static int step_counter = 0;
-    if (step_counter < 32){
-        int value = rand()%512;
-        step_counter++;
-        qDebug()<<"Test of [qweqweqwe "<<step_counter<<" with value = "<<value;
-        emit(paintMarker(step_counter*4, value));
+
+    int fv = 1;
+
+    this->update(100+step_counter,100+step_counter,100,50);
+
+    if (fv != current_fv){
+        current_fv = fv;
+        step_counter = 0;
+        for (int i=0;i<64;i++)
+            values_of_markers[i] = 0;
+    }
+
+    step_counter++;
+    marker_counter++;
+    if (marker_counter >= 32)
+        marker_counter = 0;
+
+    if (step_counter < 64){
+        adc_value = rand()%512;
+        kf_value = marker_counter*4;
+        QRect upd_rect(15+step_counter*10,0,30,512);
+        qDebug()<<"update_part: left: "<<upd_rect.left()<< " right: "<<upd_rect.right()<<" kf_value = "
+               <<kf_value<< " adc_value = "<<adc_value;
+        //this->update(upd_rect);
     }
 }
 
@@ -39,21 +59,42 @@ void MyWidget::paintEvent(QPaintEvent *pe)
         QPoint(0, 0)
     };
 
-    QPainter painter(this);
-    QBrush cur_brush;
-    if (current_color == 0)
-        cur_brush = QBrush(Qt::black);
-    else if (current_color == 1)
-        cur_brush = QBrush(Qt::green);
-    else if (current_color == 2)
-        cur_brush = QBrush(Qt::cyan);
+    static const QPoint second_marker[3] = {
+        QPoint(5, 5),
+        QPoint(7,0),
+        QPoint(1, 1)
+    };
+
 
     // If update event for part of widget
-    if (pe->rect().width() < this->width()-100)
-        painter.fillRect(pe->rect(),cur_brush);
+    if ((pe->rect()).width() < 300){
+        QPainter painter(this);
+        painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
+        painter.setBrush(Qt::green);
+        painter.drawPoint(10,10);
+        //painter.fillRect(pe->rect(), Qt::red);
+//        QPainter painter(this);
+//        //painter.save();
+//        painter.setPen(Qt::NoPen);
+//        //painter.fillRect(pe->rect(),Qt::black);
+//        painter.setBrush(Qt::green);
+//        painter.drawConvexPolygon(second_marker, 3);
+//        //painter.translate(0, adc_value);
+//        painter.fillRect(0,0,10,10,Qt::red);
+//        //
+//        painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
+//        painter.drawText(10, 10 , "0x");
+
+//        painter.drawConvexPolygon(marker, 3);
+//        qDebug()<<"draw polygon";
+//        //painter.restore();
+//        painter.end();
+    }
+
+    // update event for whole widget
     else {
         QPainter painter(this);
-        QBrush temp_brush = QBrush(Qt::yellow);
+        //QBrush temp_brush = QBrush(Qt::yellow);
         painter.fillRect(pe->rect(),Qt::black);
         //painter.fillRect(300,100,50,30,temp_brush);   // Fill yellow rect
         painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
@@ -85,9 +126,10 @@ void MyWidget::paintEvent(QPaintEvent *pe)
             painter.drawText(i, 525, "0x"+QString::number(scale_counter, 16));
             scale_counter += 16;
         }
+        painter.end();
     }
 
-    painter.end();
+    //painter.end();
 }
 //! [2]
 
@@ -105,20 +147,16 @@ void MyWidget::paintMarker(int faza, int value)
 
     int trunc_value = value/8;  // Truncate for paint oxFFF in 512 pixels
 
-    if (faza != current_faza){
-        marker_counter = 0;
-        for (int i=0;i<64;i++)
-            values[i] = 0;
-    }
+//    if (faza != current_faza){
+//        marker_counter = 0;
+//        for (int i=0;i<64;i++)
+//            values_of_markers[i] = 0;
+//    }
 
     QPainter painter(this);
 
     marker_counter++;
-    if ((marker_counter > 16)&&(faza < 0x40)&&(offset < 100)){
-        offset = 320;
-    }
     // Move X to the current position
-    painter.translate(offset + (faza/4)*5, 0);
     // Clear current at next markers
     painter.fillRect(-5,0,20,512,Qt::black);
 
@@ -135,20 +173,13 @@ void MyWidget::paintMarker(int faza, int value)
 
 
 
-
-void MyWidget::renderPoint()
-{
-    ;
-}
-
-
 //! [3]
 void MyWidget::renderLeft()
 {
     int width = this->width();
     int height = this->height();
     QRect upd_rect = QRect(0, 0, width/2, height/2);
-    current_color = 1;
+    //current_color = 1;
 
     this->update(upd_rect);
 }
@@ -162,7 +193,7 @@ void MyWidget::renderRight()
     int width = this->width();
     int height = this->height();
     QRect upd_rect = QRect(width/2, height/2, width/2, height/2);
-    current_color = 2;
+    //current_color = 2;
 
     this->update(upd_rect);
 }

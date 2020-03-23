@@ -12,7 +12,6 @@ public:
     MyWidget(QWidget* parent = NULL);
 
 public slots:
-    void renderPoint();
     void renderLeft();
     void renderRight();
     void paintMarker(int faza, int value);
@@ -22,11 +21,12 @@ protected:
     void paintEvent(QPaintEvent* pe) Q_DECL_OVERRIDE;
 
 private:
-    int current_color;
-    int offset;
-    int current_faza;
+    //int offset;
+    int current_fv;
     int marker_counter;
-    int values[64];
+    int kf_value;
+    int adc_value;
+    int values_of_markers[64];
 };
 
 
