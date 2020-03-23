@@ -25,6 +25,8 @@ public:
         QObject::connect(btn_right, SIGNAL(clicked(bool)), wgt, SLOT(renderRight()));
 
         setLayout(hlayout);
+
+        this->startTimer(3000);
     }
     //![1]
 
@@ -44,6 +46,7 @@ public slots:
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+    srand(QTime::currentTime().msec());
 
     Container cnt;
     cnt.show();
