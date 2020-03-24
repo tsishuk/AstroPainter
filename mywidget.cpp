@@ -6,13 +6,14 @@
 //! [1]
 MyWidget::MyWidget(QWidget *parent):
     QWidget(parent),
-    current_fv(0), marker_counter(0)
+    current_fv(0),  marker_counter(0),
+    adc_value(-1)
 {
-    setFixedSize(670,550);
+    setFixedSize(680,550);
     this->setUpdatesEnabled(true);
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMarker()));
-    timer->start(2000);
+    timer->start(1000);
 }
 //! [1]
 
@@ -24,7 +25,7 @@ void MyWidget::updateMarker()
 
     int fv = 1;
 
-    this->update(100+step_counter,100+step_counter,100,50);
+    //this->update(100+step_counter,100+step_counter,200,200);
 
     if (fv != current_fv){
         current_fv = fv;
@@ -41,10 +42,10 @@ void MyWidget::updateMarker()
     if (step_counter < 64){
         adc_value = rand()%512;
         kf_value = marker_counter*4;
-        QRect upd_rect(15+step_counter*10,0,30,512);
+        QRect upd_rect(15+step_counter*10,0,10,512);
         qDebug()<<"update_part: left: "<<upd_rect.left()<< " right: "<<upd_rect.right()<<" kf_value = "
                <<kf_value<< " adc_value = "<<adc_value;
-        //this->update(upd_rect);
+        this->update(upd_rect);
     }
 }
 
@@ -66,68 +67,54 @@ void MyWidget::paintEvent(QPaintEvent *pe)
     };
 
 
-    // If update event for part of widget
-    if ((pe->rect()).width() < 300){
         QPainter painter(this);
-        painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
-        painter.setBrush(Qt::green);
-        painter.drawPoint(10,10);
-        //painter.fillRect(pe->rect(), Qt::red);
-//        QPainter painter(this);
-//        //painter.save();
-//        painter.setPen(Qt::NoPen);
-//        //painter.fillRect(pe->rect(),Qt::black);
-//        painter.setBrush(Qt::green);
-//        painter.drawConvexPolygon(second_marker, 3);
-//        //painter.translate(0, adc_value);
-//        painter.fillRect(0,0,10,10,Qt::red);
-//        //
-//        painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
-//        painter.drawText(10, 10 , "0x");
-
-//        painter.drawConvexPolygon(marker, 3);
-//        qDebug()<<"draw polygon";
-//        //painter.restore();
-//        painter.end();
-    }
-
-    // update event for whole widget
-    else {
-        QPainter painter(this);
-        //QBrush temp_brush = QBrush(Qt::yellow);
         painter.fillRect(pe->rect(),Qt::black);
-        //painter.fillRect(300,100,50,30,temp_brush);   // Fill yellow rect
         painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
         painter.setBrush(Qt::green);
 
         // Paint vertical grid
-        for(int i=20; i<=650; i+=40){
+        for(int i=20; i<=660; i+=40){
             painter.drawLine(QPoint(i,0), QPoint(i,512));
         }
 
-        painter.save();
-        painter.setPen(Qt::NoPen);
-        painter.translate(20,300);
+//        painter.save();
+//        painter.setPen(Qt::NoPen);
+//        painter.translate(20,300);
 
-        // Paint markers
-        painter.drawConvexPolygon(marker, 3);
-        painter.translate(10,10);
-        for (int i=0; i<32;i++){
-            painter.drawConvexPolygon(marker, 3);
-            painter.translate(10,1);
-        }
-        painter.restore();
-        int scale_counter = 0;
+
+//        // Paint markers
+//        painter.drawConvexPolygon(marker, 3);
+//        painter.translate(10,10);
+//        for (int i=0; i<32;i++){
+//            painter.drawConvexPolygon(marker, 3);
+//            painter.translate(10,1);
+//        }
+
+
+//        painter.restore();
 
         // Paint hex labels under vertical grid
-        for (int i=10; i<650; i+=40){
+        int scale_counter = 0;
+        for (int i=10; i<660; i+=40){
             if (scale_counter >= 127)
                 scale_counter = 0;
             painter.drawText(i, 525, "0x"+QString::number(scale_counter, 16));
             scale_counter += 16;
         }
+
+        // If there non-zero adc_value, paint it in update region
+        if (adc_value >= 0){
+           painter.setPen(Qt::NoPen);
+           painter.setBrush(Qt::green);
+           painter.translate(pe->rect().x() + 5, 512-adc_value);
+           painter.drawConvexPolygon(marker, 3);
+           qDebug()<<"kf_value = 0x"<<QString::number(kf_value,16);
+        }
+
+
+
         painter.end();
-    }
+//    }
 
     //painter.end();
 }
