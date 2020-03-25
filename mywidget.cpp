@@ -1,8 +1,12 @@
 #include "mywidget.h"
 #include <QWidget>
 #include <QPainter>
+#include <QtGui>
 
 #define FIRST_MARKER_OFFSET 20
+
+// Without declaration - error of access to this variable
+int MyWidget::values_of_markers[64];
 
 
 //! [1]
@@ -12,9 +16,12 @@ MyWidget::MyWidget(QWidget *parent):
     adc_value(-1), current_indeks(0)
 {
     setFixedSize(680,550);
+    for (int i=0;i<64;i++)
+        //this->values_of_markers[i] = -1;
+         MyWidget::values_of_markers[i] = -1;
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMarker()));
-    timer->start(50);
+    timer->start(100);
 }
 //! [1]
 
@@ -28,11 +35,11 @@ void MyWidget::updateMarker()
 
     // Initialize array of values when fv change
     if (fv != current_fv){
-        this->setUpdatesEnabled(true);
         current_fv = fv;
         step_counter = 0;
-        for (int i=0;i<64;i++)
-            values_of_markers[i] = -1;
+        // TODO: INIT Variables when change fv
+//        for (int i=0;i<64;i++)
+//            values_of_markers[i] = -1;
     }
 
     // Generate random adc value and update region for current fv
@@ -43,6 +50,7 @@ void MyWidget::updateMarker()
         QRect upd_rect(FIRST_MARKER_OFFSET + step_counter*10, 0, 10, 512);  // Update whole rect for current fv
         qDebug()<<"update_part: left: "<< upd_rect.left() << " right: "<<upd_rect.right() <<" kf_value = "
                << kf_value << " adc_value =" << adc_value;
+        MyWidget::values_of_markers[step_counter] = adc_value;
         this->update(upd_rect);
     }
 
@@ -64,6 +72,7 @@ void MyWidget::updateMarker()
 //! [2]
 void MyWidget::paintEvent(QPaintEvent *pe)
 {
+    int i;
     static const QPoint marker[3] = {
         QPoint(5, 5),
         QPoint(-5, 5),
@@ -72,7 +81,14 @@ void MyWidget::paintEvent(QPaintEvent *pe)
 
     //--------------------------------------------------
     //
-    QPainter painter(this);
+    QImage   img(size(), QImage::Format_ARGB32_Premultiplied);
+    QPainter painter;
+
+    painter.begin(&img);
+    painter.initFrom(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.eraseRect(rect());
+
     painter.fillRect(pe->rect(),Qt::black);
     painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
     painter.setBrush(Qt::green);
@@ -82,46 +98,34 @@ void MyWidget::paintEvent(QPaintEvent *pe)
         painter.drawLine(QPoint(i,0), QPoint(i,512));
     }
 
-    //        painter.save();
-    //        painter.setPen(Qt::NoPen);
-    //        painter.translate(20,300);
-
-    //        // Paint markers
-    //        painter.drawConvexPolygon(marker, 3);
-    //        painter.translate(10,10);
-    //        for (int i=0; i<32;i++){
-    //            painter.drawConvexPolygon(marker, 3);
-    //            painter.translate(10,1);
-    //        }
-
-
-    //        painter.restore();
-
     // Paint hex labels under vertical grid
     int scale_counter = 0;
-    for (int i=(FIRST_MARKER_OFFSET-5); i<660; i+=40){
+    for (i=(FIRST_MARKER_OFFSET-5); i<660; i+=40){
         if (scale_counter >= 127)
             scale_counter = 0;
         painter.drawText(i, 525, "0x"+QString::number(scale_counter, 16));
         scale_counter += 16;
     }
-    //
-    //--------------------------------------------------
 
-
-    // If there non-zero adc_value, paint it in update region
-    if (adc_value >= 0){
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::green);
-        painter.translate(pe->rect().x() + 5, 512-adc_value);
-        painter.drawConvexPolygon(marker, 3);
-        //qDebug()<<"kf_value = 0x"<<QString::number(kf_value,16);
-        values_of_markers[current_indeks] = adc_value;   // store current adc value in array
+    // Draw markers
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::green);
+    painter.translate(FIRST_MARKER_OFFSET-5, 0);
+    for (i=0;i<64;i++){
+        if (MyWidget::values_of_markers[i] >= 0){
+            painter.translate(10, 512-MyWidget::values_of_markers[i]);
+            painter.drawConvexPolygon(marker, 3);
+            painter.translate(0, MyWidget::values_of_markers[i]-512);
+        }
+        else
+            painter.translate(10, 0);
     }
 
     painter.end();
-//    }
 
+    painter.begin(this);
+    painter.drawImage(0, 0, img);
+    painter.end();
 }
 //! [2]
 
@@ -154,8 +158,6 @@ void MyWidget::findMax()
     qDebug()<< "min1=" << min1 << "indeks1 = " << indeks1;
     qDebug()<< "min2=" << min2 << "indeks2 = " << indeks2;
 
-    this->setUpdatesEnabled(false);
-    qDebug()<<"Updates enabled = "<<this->updatesEnabled();
 }
 //! [4]
 
