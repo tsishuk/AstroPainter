@@ -2,11 +2,12 @@
 #define UPDATEFILTER
 
 #include <QObject>
+#include <QEvent>
 
 class UpdateFilter : public QObject
 {
 protected:
-    virtual bool eventFilter(QObject *, QEvent *);
+    bool eventFilter(QObject *, QEvent *);
 
 public:
     UpdateFilter(QObject* pobj = 0);

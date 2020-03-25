@@ -11,12 +11,15 @@ UpdateFilter::UpdateFilter(QObject *pobj)
 bool UpdateFilter::eventFilter(QObject *pobj, QEvent *pe)
 {
     qDebug()<<"IN Event Filter"<<"type = "<< pe->type();
-    if (pe->type() == QEvent::FocusIn){
-        qDebug()<<"Focus IN Event";
+
+    if (pe->type() == QEvent::WindowActivate){
+        return true;
     }
-    else if (pe->type() == QEvent::FocusOut){
-        qDebug()<<"Focus OUT Event";
+    if (pe->type() == QEvent::WindowDeactivate){
+        return true;
     }
+
+    qDebug()<<"Event" << pe->type() << "->Exit";
     return false;
 }
 //[2]
