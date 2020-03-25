@@ -26,6 +26,7 @@ private:
     int marker_counter;
     int kf_value;
     int adc_value;
+    int current_indeks;
     int values_of_markers[64];
 };
 
