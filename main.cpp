@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include "mywidget.h"
 #include "updatefilter.h"
+#include "imagedraw.h"
 
 
 class Container : public QWidget
@@ -21,12 +22,17 @@ public:
         MyWidget* wgt = new MyWidget;
         wgt->installEventFilter(new UpdateFilter(wgt));
 
+        ImageDraw* img = new ImageDraw;
+        img->resize(250,200);
+        img->setFixedSize(250,200);
+
         hlayout->addWidget(btn_left);
         hlayout->addWidget(btn_right);
         hlayout->addWidget(wgt);
+        hlayout->addWidget(img);
 
         setLayout(hlayout);
-        this->setFixedSize(750,600);
+        this->setFixedSize(1200,600);
         //this->setWindowState();
     }
     //![1]
