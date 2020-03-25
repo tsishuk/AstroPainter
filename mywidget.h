@@ -12,10 +12,8 @@ public:
     MyWidget(QWidget* parent = NULL);
 
 public slots:
-    void renderLeft();
-    void renderRight();
-    void paintMarker(int faza, int value);
     void updateMarker();
+    void findMax();
 
 protected:
     void paintEvent(QPaintEvent* pe) Q_DECL_OVERRIDE;

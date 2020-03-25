@@ -21,18 +21,13 @@ public:
         hlayout->addWidget(btn_right);
         hlayout->addWidget(wgt);
 
-        //QObject::connect(btn_left, SIGNAL(clicked(bool)), wgt, SLOT(renderLeft()));
-        //QObject::connect(btn_right, SIGNAL(clicked(bool)), wgt, SLOT(renderRight()));
-
         setLayout(hlayout);
-
-        //this->startTimer(3000);
     }
     //![1]
 
 
-    //![2]
 public slots:
+    //![2]
     void EmptySlot()
     {
         qDebug()<<"I ama slot";
