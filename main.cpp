@@ -3,6 +3,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include "mywidget.h"
+#include "updatefilter.h"
 
 
 class Container : public QWidget
@@ -17,6 +18,7 @@ public:
         QPushButton* btn_left = new QPushButton("Press me LEFT");
         QPushButton* btn_right = new QPushButton("Press me RIGHT");
         MyWidget* wgt = new MyWidget;
+        wgt->installEventFilter(new UpdateFilter(wgt));
         hlayout->addWidget(btn_left);
         hlayout->addWidget(btn_right);
         hlayout->addWidget(wgt);

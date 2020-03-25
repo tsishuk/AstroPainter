@@ -2,7 +2,9 @@ QT += core widgets gui
 
 SOURCES += \
     main.cpp \
-    mywidget.cpp
+    mywidget.cpp \
+    updatefilter.cpp
 
 HEADERS += \
-    mywidget.h
+    mywidget.h \
+    updatefilter.h
