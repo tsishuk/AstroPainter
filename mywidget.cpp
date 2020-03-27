@@ -56,7 +56,7 @@ void MyWidget::updateMarker()
         QRect upd_rect(FIRST_MARKER_OFFSET + step_counter*10, 0, 10, 512);  // Update whole rect for current fv
         qDebug()<<"update_part: left: "<< upd_rect.left() << " right: "<<upd_rect.right() <<" kf_value = "
                << kf_value << " adc_value =" << adc_value;
-        MyWidget::values_of_markers[step_counter] = adc_value;
+        MyWidget::values_of_markers[step_counter] = adc_value;  // fill current array element with adc value
         this->update(upd_rect);
     }
 

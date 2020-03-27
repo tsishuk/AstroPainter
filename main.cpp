@@ -3,8 +3,6 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include "mywidget.h"
-#include "updatefilter.h"
-#include "imagedraw.h"
 
 
 class Container : public QWidget
