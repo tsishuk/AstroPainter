@@ -5,10 +5,6 @@
 
 #define FIRST_MARKER_OFFSET 20
 
-// Without declaration - error of access to this variable
-int MyWidget::values_of_markers[64];
-
-
 
 //! [1]
 MyWidget::MyWidget(QWidget *parent):
@@ -20,7 +16,7 @@ MyWidget::MyWidget(QWidget *parent):
 
     // First init when widget create
     for (int i=0;i<64;i++)
-         MyWidget::values_of_markers[i] = -1;
+        values_of_markers[i] = -1;
 
     indeks1 = indeks2 = -1;
 
@@ -56,7 +52,7 @@ void MyWidget::updateMarker()
         QRect upd_rect(FIRST_MARKER_OFFSET + step_counter*10, 0, 10, 512);  // Update whole rect for current fv
         qDebug()<<"update_part: left: "<< upd_rect.left() << " right: "<<upd_rect.right() <<" kf_value = "
                << kf_value << " adc_value =" << adc_value;
-        MyWidget::values_of_markers[step_counter] = adc_value;  // fill current array element with adc value
+        values_of_markers[step_counter] = adc_value;  // fill current array element with adc value
         this->update(upd_rect);
     }
 
@@ -122,10 +118,10 @@ void MyWidget::paintEvent(QPaintEvent *pe)
             painter.setBrush(Qt::red);
         else
             painter.setBrush(Qt::green);
-        if (MyWidget::values_of_markers[i] >= 0){
-            painter.translate(10, 512-MyWidget::values_of_markers[i]);
+        if (values_of_markers[i] >= 0){
+            painter.translate(10, 512-values_of_markers[i]);
             painter.drawConvexPolygon(marker, 3);
-            painter.translate(0, MyWidget::values_of_markers[i]-512);
+            painter.translate(0, values_of_markers[i]-512);
         }
         else
             painter.translate(10, 0);

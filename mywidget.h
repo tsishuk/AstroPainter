@@ -25,7 +25,8 @@ private:
     int kf_value;
     int adc_value;
     int current_indeks;
-    static int values_of_markers[64];
+    //static int values_of_markers[64];
+    int values_of_markers[64];
     int indeks1, indeks2;
     int min1, min2;
 };
