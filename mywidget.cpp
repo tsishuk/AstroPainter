@@ -13,6 +13,7 @@ MyWidget::MyWidget(QWidget *parent):
     adc_value(-1), current_indeks(0)
 {
     setFixedSize(680,550);
+    this->setMouseTracking(true);
 
     // First init when widget create
     for (int i=0;i<64;i++){
@@ -24,9 +25,25 @@ MyWidget::MyWidget(QWidget *parent):
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMarker()));
-    timer->start(100);
+    timer->start(30);
 }
 //! [1]
+
+
+
+//! [0]
+void MyWidget::mouseMoveEvent(QMouseEvent *pe)
+{
+    int x_indeks=-1;
+    if (pe->x()>(FIRST_MARKER_OFFSET-5)){
+        x_indeks = (pe->x()-FIRST_MARKER_OFFSET)/10;
+        if ((pe->y() < (marker_values[x_indeks] + 6))&&(pe->y() > (marker_values[x_indeks] - 1)))
+            qDebug()<<"in marker area " << x_indeks;
+    }
+
+    //qDebug()<<"x = "<<pe->x()<<"y = "<<pe->y()<<"x_indeks = "<<x_indeks;
+}
+//! [0]
 
 
 
@@ -55,10 +72,10 @@ void MyWidget::updateMarker()
         kf_value = marker_counter*4;
         current_indeks = step_counter;
         QRect upd_rect(FIRST_MARKER_OFFSET + step_counter*10, 0, 10, 512);  // Update whole rect for current fv
-        qDebug()<<"update_part: left: "<< upd_rect.left() << " right: "<<upd_rect.right() <<" kf_value = "
-               << kf_value << " adc_value =" << adc_value;
         adc_values[step_counter] = adc_value;
         marker_values[step_counter] = 512-adc_value;
+        qDebug()<<"update_part: left: "<< upd_rect.left() << " right: "<<upd_rect.right() <<" kf_value = "
+               << kf_value << " adc_value =" << adc_value << "marker_value = "<<marker_values[step_counter];
         this->update(upd_rect);
     }
 
@@ -149,8 +166,8 @@ void MyWidget::findMax()
     min1 = min2 = 0xFFF;
     indeks1 = indeks2 = -1;
 
-    for (int i=0; i<64; i++)
-        qDebug()<< i <<" "<<adc_values[i];
+//    for (int i=0; i<64; i++)
+//        qDebug()<< i <<" "<<adc_values[i];
 
     for (int i=0; i<32;i++){
         if (adc_values[i]<min1){

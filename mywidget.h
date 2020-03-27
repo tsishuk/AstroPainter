@@ -17,6 +17,7 @@ public slots:
 
 protected:
     void paintEvent(QPaintEvent* pe) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent* pe) Q_DECL_OVERRIDE;
 
 private:
     int current_fv;
