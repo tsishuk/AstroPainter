@@ -19,14 +19,13 @@ protected:
     void paintEvent(QPaintEvent* pe) Q_DECL_OVERRIDE;
 
 private:
-    //int offset;
     int current_fv;
     int marker_counter;
     int kf_value;
     int adc_value;
     int current_indeks;
-    //static int values_of_markers[64];
-    int values_of_markers[64];
+    int marker_values[64];
+    int adc_values[64];
     int indeks1, indeks2;
     int min1, min2;
 };

@@ -15,8 +15,10 @@ MyWidget::MyWidget(QWidget *parent):
     setFixedSize(680,550);
 
     // First init when widget create
-    for (int i=0;i<64;i++)
-        values_of_markers[i] = -1;
+    for (int i=0;i<64;i++){
+        marker_values[i] = -1;
+        adc_values[i] = -1;
+    }
 
     indeks1 = indeks2 = -1;
 
@@ -39,9 +41,12 @@ void MyWidget::updateMarker()
     if (fv != current_fv){
         current_fv = fv;
         step_counter = 0;
+
         // TODO: INIT Variables when change fv
-        for (int i=0;i<64;i++)
-            values_of_markers[i] = -1;
+        for (int i=0;i<64;i++){
+            marker_values[i] = -1;
+            adc_values[i] = -1;
+        }
     }
 
     // Generate random adc value and update region for current fv
@@ -52,7 +57,8 @@ void MyWidget::updateMarker()
         QRect upd_rect(FIRST_MARKER_OFFSET + step_counter*10, 0, 10, 512);  // Update whole rect for current fv
         qDebug()<<"update_part: left: "<< upd_rect.left() << " right: "<<upd_rect.right() <<" kf_value = "
                << kf_value << " adc_value =" << adc_value;
-        values_of_markers[step_counter] = adc_value;  // fill current array element with adc value
+        adc_values[step_counter] = adc_value;
+        marker_values[step_counter] = 512-adc_value;
         this->update(upd_rect);
     }
 
@@ -118,10 +124,10 @@ void MyWidget::paintEvent(QPaintEvent *pe)
             painter.setBrush(Qt::red);
         else
             painter.setBrush(Qt::green);
-        if (values_of_markers[i] >= 0){
-            painter.translate(10, 512-values_of_markers[i]);
+        if (adc_values[i] >= 0){
+            painter.translate(10, marker_values[i]);
             painter.drawConvexPolygon(marker, 3);
-            painter.translate(0, values_of_markers[i]-512);
+            painter.translate(0, -marker_values[i]);
         }
         else
             painter.translate(10, 0);
@@ -144,24 +150,24 @@ void MyWidget::findMax()
     indeks1 = indeks2 = -1;
 
     for (int i=0; i<64; i++)
-        qDebug()<< i <<" "<<values_of_markers[i];
+        qDebug()<< i <<" "<<adc_values[i];
 
     for (int i=0; i<32;i++){
-        if (values_of_markers[i]<min1){
-            min1 = values_of_markers[i];
+        if (adc_values[i]<min1){
+            min1 = adc_values[i];
             indeks1 = i;
         }
     }
 
     for (int i=32; i<64;i++){
-        if (values_of_markers[i]<min2){
-            min2 = values_of_markers[i];
+        if (adc_values[i]<min2){
+            min2 = adc_values[i];
             indeks2 = i;
         }
     }
 
-    qDebug()<< "min1=" << min1 << "indeks1 = 0x" << indeks1 << "kf = "<<QString::number((indeks1*4)%128, 16);
-    qDebug()<< "min2=" << min2 << "indeks2 = 0x" << indeks2 << "kf = "<<QString::number((indeks2*4)%128, 16);
+    qDebug()<< "min1=" << min1 << "kf = "<<QString::number((indeks1*4)%128, 16);
+    qDebug()<< "min2=" << min2 << "kf = "<<QString::number((indeks2*4)%128, 16);
 
     this->update();
 }
