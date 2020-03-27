@@ -9,6 +9,7 @@
 int MyWidget::values_of_markers[64];
 
 
+
 //! [1]
 MyWidget::MyWidget(QWidget *parent):
     QWidget(parent),
@@ -16,14 +17,19 @@ MyWidget::MyWidget(QWidget *parent):
     adc_value(-1), current_indeks(0)
 {
     setFixedSize(680,550);
+
+    // First init when widget create
     for (int i=0;i<64;i++)
-        //this->values_of_markers[i] = -1;
          MyWidget::values_of_markers[i] = -1;
+
+    indeks1 = indeks2 = -1;
+
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMarker()));
     timer->start(100);
 }
 //! [1]
+
 
 
 //! [3]
@@ -38,8 +44,8 @@ void MyWidget::updateMarker()
         current_fv = fv;
         step_counter = 0;
         // TODO: INIT Variables when change fv
-//        for (int i=0;i<64;i++)
-//            values_of_markers[i] = -1;
+        for (int i=0;i<64;i++)
+            values_of_markers[i] = -1;
     }
 
     // Generate random adc value and update region for current fv
@@ -112,6 +118,10 @@ void MyWidget::paintEvent(QPaintEvent *pe)
     painter.setBrush(Qt::green);
     painter.translate(FIRST_MARKER_OFFSET-5, 0);
     for (i=0;i<64;i++){
+        if ((i == indeks1)||(i == indeks2))
+            painter.setBrush(Qt::red);
+        else
+            painter.setBrush(Qt::green);
         if (MyWidget::values_of_markers[i] >= 0){
             painter.translate(10, 512-MyWidget::values_of_markers[i]);
             painter.drawConvexPolygon(marker, 3);
@@ -134,10 +144,9 @@ void MyWidget::paintEvent(QPaintEvent *pe)
 //! [4]
 void MyWidget::findMax()
 {
-    int indeks1, indeks2;
-    int min1, min2;
     min1 = min2 = 0xFFF;
-    indeks1 = indeks2 = 0;
+    indeks1 = indeks2 = -1;
+
     for (int i=0; i<64; i++)
         qDebug()<< i <<" "<<values_of_markers[i];
 
@@ -155,9 +164,10 @@ void MyWidget::findMax()
         }
     }
 
-    qDebug()<< "min1=" << min1 << "indeks1 = " << indeks1;
-    qDebug()<< "min2=" << min2 << "indeks2 = " << indeks2;
+    qDebug()<< "min1=" << min1 << "indeks1 = 0x" << indeks1 << "kf = "<<QString::number((indeks1*4)%128, 16);
+    qDebug()<< "min2=" << min2 << "indeks2 = 0x" << indeks2 << "kf = "<<QString::number((indeks2*4)%128, 16);
 
+    this->update();
 }
 //! [4]
 
