@@ -29,6 +29,7 @@ private:
     int adc_values[64];
     int indeks1, indeks2;
     int min1, min2;
+    bool show_tooltip;
 };
 
 

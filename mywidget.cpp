@@ -2,6 +2,8 @@
 #include <QWidget>
 #include <QPainter>
 #include <QtGui>
+#include <QToolTip>
+#include <QString>
 
 #define FIRST_MARKER_OFFSET 20
 
@@ -35,13 +37,23 @@ MyWidget::MyWidget(QWidget *parent):
 void MyWidget::mouseMoveEvent(QMouseEvent *pe)
 {
     int x_indeks=-1;
+    QString text_of_tooltip = "";
+
     if (pe->x()>(FIRST_MARKER_OFFSET-5)){
         x_indeks = (pe->x()-FIRST_MARKER_OFFSET)/10;
-        if ((pe->y() < (marker_values[x_indeks] + 6))&&(pe->y() > (marker_values[x_indeks] - 1)))
-            qDebug()<<"in marker area " << x_indeks;
+        if ((pe->y() < (marker_values[x_indeks] + 6))&&(pe->y() > (marker_values[x_indeks] - 1))){
+            if (show_tooltip == false){
+                text_of_tooltip = "kf = 0x" + QString::number(((x_indeks*4) % 128), 16)
+                         + "\n" + QString::number((static_cast<double>(adc_values[x_indeks]*8)*3.3/4096.0), 'g' ,3) + " V";
+                QToolTip::showText(pe->globalPos(), text_of_tooltip);
+                show_tooltip = true;
+            }
+        }
+        else {
+            QToolTip::hideText();
+            show_tooltip = false;
+        }
     }
-
-    //qDebug()<<"x = "<<pe->x()<<"y = "<<pe->y()<<"x_indeks = "<<x_indeks;
 }
 //! [0]
 
@@ -132,6 +144,11 @@ void MyWidget::paintEvent(QPaintEvent *pe)
         scale_counter += 16;
     }
 
+    painter.setPen(QPen(Qt::yellow, 1, Qt::SolidLine));
+    painter.drawText(0, 10, "3.3V");
+    painter.drawText(2, 510, "0V");
+    painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
+
     // Draw markers
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::green);
@@ -165,9 +182,6 @@ void MyWidget::findMax()
 {
     min1 = min2 = 0xFFF;
     indeks1 = indeks2 = -1;
-
-//    for (int i=0; i<64; i++)
-//        qDebug()<< i <<" "<<adc_values[i];
 
     for (int i=0; i<32;i++){
         if (adc_values[i]<min1){
