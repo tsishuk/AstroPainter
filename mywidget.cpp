@@ -15,7 +15,7 @@ MyWidget::MyWidget(QWidget *parent):
     adc_value(-1), current_indeks(0)
 {
     setFixedSize(680,550);
-    this->setMouseTracking(true);
+    this->setMouseTracking(true);//for mouse tracking without pressed buttons
 
     // First init when widget create
     for (int i=0;i<64;i++){
@@ -39,10 +39,10 @@ void MyWidget::mouseMoveEvent(QMouseEvent *pe)
     int x_indeks=-1;
     QString text_of_tooltip = "";
 
-    if (pe->x()>(FIRST_MARKER_OFFSET-5)){
-        x_indeks = (pe->x()-FIRST_MARKER_OFFSET)/10;
-        if ((pe->y() < (marker_values[x_indeks] + 6))&&(pe->y() > (marker_values[x_indeks] - 1))){
-            if (show_tooltip == false){
+    if (pe->x()>(FIRST_MARKER_OFFSET-5)){           // in the area of markers on x-axis
+        x_indeks = (pe->x()-FIRST_MARKER_OFFSET)/10;// get marker x-indeks
+        if ((pe->y() < (marker_values[x_indeks] + 6))&&(pe->y() > (marker_values[x_indeks] - 1))){// in the area of marker
+            if (show_tooltip == false){ // if no tooltip for this marker before
                 text_of_tooltip = "kf = 0x" + QString::number(((x_indeks*4) % 128), 16)
                          + "\n" + QString::number((static_cast<double>(adc_values[x_indeks]*8)*3.3/4096.0), 'g' ,3) + " V";
                 QToolTip::showText(pe->globalPos(), text_of_tooltip);
@@ -78,7 +78,7 @@ void MyWidget::updateMarker()
         }
     }
 
-    // Generate random adc value and update region for current fv
+    // Generate random adc value and update region for current fv [0..63]
     if (step_counter < 64){
         adc_value = rand()%512;
         kf_value = marker_counter*4;
@@ -93,7 +93,7 @@ void MyWidget::updateMarker()
 
     if (step_counter == 64)
     {
-        findMax();
+        findMax();  // in the last step
     }
 
     step_counter++;
@@ -110,6 +110,7 @@ void MyWidget::updateMarker()
 void MyWidget::paintEvent(QPaintEvent *pe)
 {
     int i;
+    // triangle for marker paint
     static const QPoint marker[3] = {
         QPoint(5, 5),
         QPoint(-5, 5),
@@ -118,21 +119,27 @@ void MyWidget::paintEvent(QPaintEvent *pe)
 
     //--------------------------------------------------
     //
-    QImage   img(size(), QImage::Format_ARGB32_Premultiplied);
+    QImage   img(size(), QImage::Format_ARGB32_Premultiplied);  // image for painting
     QPainter painter;
 
+    // Painter init
     painter.begin(&img);
     painter.initFrom(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.eraseRect(rect());
+    painter.eraseRect(rect());  // erase previous area
 
+    // Fill the background
     painter.fillRect(pe->rect(),Qt::black);
     painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
     painter.setBrush(Qt::green);
 
     // Paint vertical grid
     for(int i=FIRST_MARKER_OFFSET+5; i<=670; i+=40){
+        if ((i==FIRST_MARKER_OFFSET+5)||(i==FIRST_MARKER_OFFSET+325)){   // for zero kf lines solid lines
+            painter.setPen(QPen(Qt::darkGray, 2, Qt::SolidLine));
+        }
         painter.drawLine(QPoint(i,0), QPoint(i,512));
+        painter.setPen(QPen(Qt::darkGray, 1, Qt::DashLine));
     }
 
     // Paint hex labels under vertical grid
@@ -144,6 +151,7 @@ void MyWidget::paintEvent(QPaintEvent *pe)
         scale_counter += 16;
     }
 
+    // Paint voltage labels on the left side
     painter.setPen(QPen(Qt::yellow, 1, Qt::SolidLine));
     painter.drawText(0, 10, "3.3V");
     painter.drawText(2, 510, "0V");
@@ -154,7 +162,7 @@ void MyWidget::paintEvent(QPaintEvent *pe)
     painter.setBrush(Qt::green);
     painter.translate(FIRST_MARKER_OFFSET-5, 0);
     for (i=0;i<64;i++){
-        if ((i == indeks1)||(i == indeks2))
+        if ((i == indeks1)||(i == indeks2)) // if one of the 2 minimal markers
             painter.setBrush(Qt::red);
         else
             painter.setBrush(Qt::green);
@@ -164,13 +172,13 @@ void MyWidget::paintEvent(QPaintEvent *pe)
             painter.translate(0, -marker_values[i]);
         }
         else
-            painter.translate(10, 0);
+            painter.translate(10, 0);   //move to the next marker on x-axis
     }
 
     painter.end();
 
     painter.begin(this);
-    painter.drawImage(0, 0, img);
+    painter.drawImage(0, 0, img);   // redraw whole image
     painter.end();
 }
 //! [2]
@@ -183,6 +191,7 @@ void MyWidget::findMax()
     min1 = min2 = 0xFFF;
     indeks1 = indeks2 = -1;
 
+    // Minimum find for 2 intervals [0..31], [32..63]
     for (int i=0; i<32;i++){
         if (adc_values[i]<min1){
             min1 = adc_values[i];
@@ -200,7 +209,7 @@ void MyWidget::findMax()
     qDebug()<< "min1=" << min1 << "kf = "<<QString::number((indeks1*4)%128, 16);
     qDebug()<< "min2=" << min2 << "kf = "<<QString::number((indeks2*4)%128, 16);
 
-    this->update();
+    this->update(); // redraw for 2 red minimum markers
 }
 //! [4]
 
